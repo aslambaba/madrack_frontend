@@ -1,0 +1,23 @@
+.MainHeader{
+    background-color: var(--mainheader-primary-bgcolor);
+    padding: 15px 15px;
+    width: 100%;
+    color: white;
+}
+.MainHeaderSec1 h2{
+    font-family: var(--logo-font);
+    color: white;
+}
+.MainHeaderSec2{
+    text-align: right;
+    font-family: var(--main-heading-font);
+}
+.MainHeaderSec2 button{
+    padding: 0px 14px;
+    margin: 0px 5px;
+    border: none;
+    font-size: 28px;
+    border-radius: 3px;
+    background-color: white;
+    color: #0E8388
+}
