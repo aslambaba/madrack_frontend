@@ -24,16 +24,19 @@
 .Field > div > label > input{
     margin: 12px 10px;
 }
-.Field > input, .Field > select, .FieldContainer > button{
+.Field > input, .Field > select, .FieldContainer > button, .ResendCodeSection > button{
     width: 90%;
     padding: 12px 8px;
     border-radius: 3px;
     border: none;
 }
-.FieldContainer > button {
+.FieldContainer > button, .ResendCodeSection > button {
     background-color: #9bc9e7;
     color: white;
     margin: 30px 0px;
+}
+.ResendCodeSection > span{
+    color: red;
 }
 .RegisterVectorPart{
     display: flex;
