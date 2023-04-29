@@ -8,14 +8,9 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import loginVector from "../../../public/loginVector.jpg";
+import CognitoConfig from "../utils/aws-cognito-export";
 
-Amplify.configure({
-  Auth: {
-    region: process.env.region,
-    userPoolId: process.env.userPoolId,
-    userPoolWebClientId: process.env.userPoolWebClientId,
-  },
-});
+Amplify.configure(CognitoConfig);
 
 interface RegisterFormValues {
   fullname: string;

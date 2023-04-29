@@ -1,46 +1,51 @@
-.RegisterMainSection{
-    min-height: 100vh;
-    padding: 40px 20px;
-    background-color: var(--main-body-bg);
+.RegisterMainSection {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background-color: var(--main-body-bg);
 }
-.container{
-    background-color: rebeccapurple;
-    border-radius: 5px;
+.container {
+  background-color: rebeccapurple;
+  border-radius: 5px;
 }
-.RegisterForm{
-    margin: 30px 0px;
-    padding: 10px;
+.RegisterForm {
+  margin: 30px 0px;
+  padding: 10px;
 }
-.FieldContainer{
-    padding: 40px 0px;
+.FieldContainer {
+  padding: 40px 0px;
 }
-.Field{
-    margin: 10px 0px;
+.Field {
+  margin: 10px 0px;
 }
-.Field > label{
-    margin: 10px 0px;
-    display: block;
+.Field > label {
+  margin: 10px 0px;
+  display: block;
 }
-.Field > div > label > input{
-    margin: 12px 10px;
+.Field > div > label > input {
+  margin: 12px 10px;
 }
-.Field > input, .Field > select, .FieldContainer > button, .ResendCodeSection > button{
-    width: 90%;
-    padding: 12px 8px;
-    border-radius: 3px;
-    border: none;
+.Field > input,
+.Field > select,
+.FieldContainer > button,
+.ResendCodeSection > button {
+  width: 90%;
+  padding: 12px 8px;
+  border-radius: 3px;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
 }
-.FieldContainer > button, .ResendCodeSection > button {
-    background-color: #9bc9e7;
-    color: white;
-    margin: 30px 0px;
+.FieldContainer > button,
+.ResendCodeSection > button {
+  background-color: #9bc9e7;
+  color: white;
+  margin: 30px 0px;
 }
-.ResendCodeSection > span{
-    color: red;
+.ResendCodeSection > span {
+  color: red;
 }
-.RegisterVectorPart{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 90vh;
+.RegisterVectorPart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
 }
