@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { Amplify, Auth } from "aws-amplify";
 import MainHeader from "@/components/header/mainheader";
 import styles from "./loginstyle.module.css";
@@ -8,7 +9,7 @@ import * as Yup from "yup";
 import Image from "next/image";
 import loginVector from "../../../public/loginVector.jpg";
 import CognitoConfig from "../utils/aws-cognito-export";
-
+import { useAuth } from "../utils/userLoggedIn";
 Amplify.configure(CognitoConfig);
 
 interface LoginFormValues {
@@ -25,8 +26,12 @@ interface EmailVerificationValues {
   confirmPassword: string;
 }
 export default function Login() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState("loginStep");
   const [userEmail, setUserEmail] = useState("");
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  useAuth(setIsUserLoggedIn);
+
   const LoginInitialValues: LoginFormValues = {
     email: "",
     password: "",
@@ -75,6 +80,7 @@ export default function Login() {
     try {
       await Auth.signIn(values.email, values.password).then((response) => {
         console.log("user Logged In", response);
+        router.replace("/dashboard");
       });
     } catch (error) {
       console.log("Error logging in", error);
@@ -110,7 +116,7 @@ export default function Login() {
 
   return (
     <>
-      <MainHeader />
+      <MainHeader isUserLoggedIn={isUserLoggedIn} />
       <Row>
         {/* LoginForm */}
         <Col lg={6}>

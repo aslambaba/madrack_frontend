@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AWS from "aws-sdk";
+import { useRouter } from "next/router";
 import { Amplify, Auth } from "aws-amplify";
 import MainHeader from "@/components/header/mainheader";
 import styles from "./registerstyle.module.css";
@@ -9,6 +10,7 @@ import * as Yup from "yup";
 import Image from "next/image";
 import loginVector from "../../../public/loginVector.jpg";
 import CognitoConfig from "../utils/aws-cognito-export";
+import { useAuth } from "../utils/userLoggedIn";
 
 Amplify.configure(CognitoConfig);
 
@@ -31,6 +33,9 @@ export default function Register() {
   let [user_type_of_currentUser, set_user_type_of_currentUser] = useState("");
   let [resendEmail, setResendEmail] = useState("");
   let [resendVerificationCode, setResendVerificationCode] = useState(false);
+
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  useAuth(setIsUserLoggedIn);
 
   const initialValues: RegisterFormValues = {
     fullname: "",
@@ -99,21 +104,22 @@ export default function Register() {
           console.log("Success Email Verified");
           console.log(response);
 
-          const cognito = new AWS.CognitoIdentityServiceProvider();
-          const params = {
-            GroupName: 'Doctors',
-            Username: "developerswagsofficial@gmail.com",
-            UserPoolId: 'us-east-1_qXUjefA2V',
-          };
-        
-          cognito.adminAddUserToGroup(params, (err, data) => {
-            if (err) {
-              console.log(err)
-            }
-            if(data){
-              console.log(data);
-            }
-          });
+          // === THIS IS FOR ADD USER TO PERTICULAR GROUP ===
+          // const cognito = new AWS.CognitoIdentityServiceProvider();
+          // const params = {
+          //   GroupName: 'Doctors',
+          //   Username: "developerswagsofficial@gmail.com",
+          //   UserPoolId: 'us-east-1_qXUjefA2V',
+          // };
+
+          // cognito.adminAddUserToGroup(params, (err, data) => {
+          //   if (err) {
+          //     console.log(err)
+          //   }
+          //   if(data){
+          //     console.log(data);
+          //   }
+          // });
         }
       );
       setEmailVerificationStep(false);
@@ -134,7 +140,7 @@ export default function Register() {
   }
   return (
     <>
-      <MainHeader />
+      <MainHeader isUserLoggedIn={isUserLoggedIn} />
       <Row>
         {/* Registration Form */}
         <Col lg={6}>
