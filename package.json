@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.14",
     "@aws-amplify/ui-react": "^4.6.0",
     "@types/node": "18.15.11",
     "@types/react": "18.0.37",

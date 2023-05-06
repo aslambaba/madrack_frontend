@@ -29,7 +29,11 @@ export default function Login() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState("loginStep");
   const [userEmail, setUserEmail] = useState("");
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState({
+    username: "",
+    groupname: "",
+    status: false,
+  });
   useAuth(setIsUserLoggedIn);
 
   const LoginInitialValues: LoginFormValues = {
@@ -116,7 +120,7 @@ export default function Login() {
 
   return (
     <>
-      <MainHeader isUserLoggedIn={isUserLoggedIn} />
+      <MainHeader isUserLoggedIn={isUserLoggedIn.status} />
       <Row>
         {/* LoginForm */}
         <Col lg={6}>

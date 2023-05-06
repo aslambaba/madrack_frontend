@@ -11,8 +11,47 @@ import Image from "next/image";
 import loginVector from "../../../public/loginVector.jpg";
 import CognitoConfig from "../utils/aws-cognito-export";
 import { useAuth } from "../utils/userLoggedIn";
+import { CognitoIdentityServiceProvider } from "aws-sdk";
+
+import { useMutation, gql } from "@apollo/client";
+
+const PatientInput = {
+  patient_id: String!,
+  fullName: String!,
+  fatherName: String,
+  CNICNumber: String,
+  type: String!,
+  email: String!,
+  phoneNumber: String!,
+  address: String,
+};
+const DoctorInput = {
+  name: String!,
+  doctor_id: String!,
+  CNICNumber: String,
+  email: String!,
+  type: String!,
+  phoneNumber: String!,
+  clinicAddress: String,
+};
+const Add_PATIENT = gql`
+  mutation AddPatient($patient: PatientInput) {
+    addPatient(patient: $patient)
+  }
+`;
+
+const Add_DOCTOR = gql`
+  mutation AddDoctor($doctor: DoctorInput) {
+    addDoctor(doctor: $doctor)
+  }
+`;
 
 Amplify.configure(CognitoConfig);
+// AWS.config.update({
+//   region: 'us-east-1',
+//   accessKeyId: 'AKIAUCIGS7I7YSIXZ3LJ',
+//   secretAccessKey: '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',
+// });
 
 interface RegisterFormValues {
   fullname: string;
@@ -33,8 +72,26 @@ export default function Register() {
   let [user_type_of_currentUser, set_user_type_of_currentUser] = useState("");
   let [resendEmail, setResendEmail] = useState("");
   let [resendVerificationCode, setResendVerificationCode] = useState(false);
+  let [username, setUsername] = useState("");
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState({
+    username: "",
+    groupname: "",
+    status: false,
+  });
 
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<RegisterFormValues>({
+    confirmPassword: "",
+    email: "",
+    fullname: "",
+    gender: "",
+    password: "",
+    phone: "",
+    userType: "",
+  });
+
+  const [addPatient, { loading, error }] = useMutation(Add_PATIENT);
+  const [addDoctor, docStatus] = useMutation(Add_DOCTOR);
+
   useAuth(setIsUserLoggedIn);
 
   const initialValues: RegisterFormValues = {
@@ -88,8 +145,17 @@ export default function Register() {
         },
       });
       set_user_type_of_currentUser(values.userType);
-      console.log(respose);
+      setUserData({
+        confirmPassword: values.confirmPassword,
+        email: values.email,
+        fullname: values.fullname,
+        gender: values.gender,
+        password: values.password,
+        phone: values.phone,
+        userType: values.userType,
+      });
       if (respose) {
+        setUsername(respose.userSub);
         setEmailVerificationStep(true);
       }
     } catch (error) {
@@ -100,26 +166,60 @@ export default function Register() {
   const EmailVerifyhandleSubmit = async (values: EmailVerification) => {
     try {
       await Auth.confirmSignUp(values.email, values.verificationCode).then(
-        (response) => {
+        async (response) => {
           console.log("Success Email Verified");
-          console.log(response);
+          const cognitoIdentityServiceProvider =
+            new CognitoIdentityServiceProvider({ region: "us-east-1" });
 
-          // === THIS IS FOR ADD USER TO PERTICULAR GROUP ===
-          // const cognito = new AWS.CognitoIdentityServiceProvider();
-          // const params = {
-          //   GroupName: 'Doctors',
-          //   Username: "developerswagsofficial@gmail.com",
-          //   UserPoolId: 'us-east-1_qXUjefA2V',
-          // };
+          const userPoolId = "us-east-1_qXUjefA2V";
+          let groupName = "";
 
-          // cognito.adminAddUserToGroup(params, (err, data) => {
-          //   if (err) {
-          //     console.log(err)
-          //   }
-          //   if(data){
-          //     console.log(data);
-          //   }
-          // });
+          if (user_type_of_currentUser == "Patient") {
+            groupName = "Patient";
+            // Add Data To DynamoDB
+            // console.log("Adding Patient");
+            // await addPatient({
+            //   variables: {
+            //     patient_id: userData.email,
+            //     fullName: userData.fullname,
+            //     type: userData.userType,
+            //     email: userData.email,
+            //     phoneNumber: userData.phone,
+            //   },
+            // });
+          }
+          if (user_type_of_currentUser == "Doctors") {
+            groupName = "Doctors";
+            // console.log("Adding Doctor");
+            // await addDoctor({
+            //   variables: {
+            //     doctor_id: userData.email,
+            //     name: userData.fullname,
+            //     type: userData.userType,
+            //     email: userData.email,
+            //     phoneNumber: userData.phone,
+            //   },
+            // });
+          }
+
+          // Define the parameters for the adminAddUserToGroup function
+          const params = {
+            UserPoolId: userPoolId,
+            GroupName: groupName,
+            Username: username,
+          };
+
+          cognitoIdentityServiceProvider.adminAddUserToGroup(
+            params,
+            (error, data) => {
+              if (error) {
+                console.error(error);
+                throw new Error("Error adding user to group");
+              } else {
+                console.log(data);
+              }
+            }
+          );
         }
       );
       setEmailVerificationStep(false);
@@ -140,7 +240,7 @@ export default function Register() {
   }
   return (
     <>
-      <MainHeader isUserLoggedIn={isUserLoggedIn} />
+      <MainHeader isUserLoggedIn={isUserLoggedIn.status} />
       <Row>
         {/* Registration Form */}
         <Col lg={6}>

@@ -3,8 +3,13 @@ import { Auth } from "aws-amplify";
 import { useRouter } from "next/router";
 import CognitoConfig from "./aws-cognito-export";
 
+interface Props {
+  username: string;
+  groupname: string;
+  status: boolean;
+}
 export const useAuth = (
-  setIsUserLoggedIn: React.Dispatch<React.SetStateAction<boolean>>
+  setIsUserLoggedIn: React.Dispatch<React.SetStateAction<Props>>
 ) => {
   const router = useRouter();
 
@@ -13,14 +18,18 @@ export const useAuth = (
       Auth.configure(CognitoConfig);
       try {
         await Auth.currentAuthenticatedUser().then((user) => {
-          console.log("User LoggedIn Successfully: ", user);
-          setIsUserLoggedIn(true);
-          router.replace("dashboard");
+          const role: Array<string> =
+            user?.signInUserSession?.accessToken?.payload["cognito:groups"];
+          setIsUserLoggedIn({
+            username: user.username,
+            groupname: role[0],
+            status: true,
+          });
+          router.replace("/dashboard");
         });
       } catch (error) {
-        console.log("Unauthorized User!!", error);
-        setIsUserLoggedIn(false);
-        router.replace("/login");
+        console.log(`Unauthorized User!!, ${error}`);
+        setIsUserLoggedIn({ username: "", groupname: "NaN", status: false });
       }
     };
     checkAuth();
