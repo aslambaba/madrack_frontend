@@ -1,0 +1,132 @@
+/* Banner  */
+.banner {
+  position: relative;
+  height: 550px; /* Adjust the height as needed */
+  overflow: hidden;
+  font-family: var(--small-headings);
+}
+.banner button {
+  padding: 10px 38px;
+  border-radius: 4px;
+  background-color: #fff;
+  color: black;
+  transition-duration: 1s;
+  border: 1px solid #fff;
+}
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #2827278f; /* Adjust the opacity and color as desired */
+}
+.text {
+  position: absolute;
+  bottom: -100px; /* Adjust the initial position */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff;
+  z-index: 1;
+  animation: slideUp 1s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    bottom: -100px; /* Adjust the initial position */
+  }
+  to {
+    bottom: 35%; /* Adjust the final position */
+  }
+}
+
+/* About Us Section */
+.AboutUscontainer {
+  padding: 40px 80px;
+  text-align: center;
+}
+
+.aboutusImg {
+  width: 100%;
+  height: 90%;
+  margin: 40px 0px;
+  border-radius: 8px;
+}
+.aboutUsContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  text-align: left;
+  align-items: center;
+}
+.ServicesMaAboutUscontainerinSec h2 {
+  font-family: var(--small-headings);
+  font-weight: 600;
+}
+/* Services Section */
+
+.ServicesMainSec {
+  padding: 40px 80px;
+  text-align: center;
+}
+.ServicesMainSec h2 {
+  font-family: var(--small-headings);
+  font-weight: 600;
+}
+.ServiceSec {
+  margin: 30px 10px;
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  min-height: 500px;
+  padding: 10px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  font-family: var(--small-headings);
+  color: black;
+  text-decoration: none;
+  text-decoration-color: transparent;
+}
+.ServiceSec:hover {
+  cursor: pointer;
+}
+.ServiceSec p {
+  padding: 0px 10px;
+}
+.servicesImg {
+  height: 100%;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Footer Sec */
+
+.FooterMainSec {
+  /* background-color: var(--main-body-bg); */
+  font-family: var(--small-headings);
+  /* box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 1px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  padding: 40px;
+}
+.FooterMainSec h2{
+  font-weight: 600;
+}
+.FooterMainSec ul{
+  list-style: none;
+}
+.FooterMainSec ul li{
+  margin: 10px;
+}
+.socialIcon{
+  font-size: 28px;
+  margin: 0px 5px;
+}
+.socialIconText{
+  margin: 5px;
+  font-size: 18px;
+}

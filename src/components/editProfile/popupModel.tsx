@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 type PopupModalProps = {
   children: ReactNode;
@@ -21,6 +21,7 @@ export default function PopupModal({ children, onClose }: PopupModalProps) {
           left: 0;
           width: 100vw;
           height: 100vh;
+          overflow-y: scroll !important;
           background-color: rgba(0, 0, 0, 0.5);
           z-index: 1000;
         }
@@ -31,8 +32,6 @@ export default function PopupModal({ children, onClose }: PopupModalProps) {
           transform: translate(-50%, -50%);
           background-color: #fff;
           padding: 20px;
-          overflow-y: scroll;
-
           border-radius: 5px;
         }
         .close-button {

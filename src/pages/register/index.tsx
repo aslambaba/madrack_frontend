@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import AWS from "aws-sdk";
+import { redirect } from "next/navigation";
 import { useRouter } from "next/router";
 import { Amplify, Auth } from "aws-amplify";
 import MainHeader from "@/components/header/mainheader";
@@ -13,45 +14,11 @@ import CognitoConfig from "../utils/aws-cognito-export";
 import { useAuth } from "../utils/userLoggedIn";
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 
-import { useMutation, gql } from "@apollo/client";
-
-const PatientInput = {
-  patient_id: String!,
-  fullName: String!,
-  fatherName: String,
-  CNICNumber: String,
-  type: String!,
-  email: String!,
-  phoneNumber: String!,
-  address: String,
-};
-const DoctorInput = {
-  name: String!,
-  doctor_id: String!,
-  CNICNumber: String,
-  email: String!,
-  type: String!,
-  phoneNumber: String!,
-  clinicAddress: String,
-};
-const Add_PATIENT = gql`
-  mutation AddPatient($patient: PatientInput) {
-    addPatient(patient: $patient)
-  }
-`;
-
-const Add_DOCTOR = gql`
-  mutation AddDoctor($doctor: DoctorInput) {
-    addDoctor(doctor: $doctor)
-  }
-`;
+import { useMutation } from "@apollo/client";
+import { Add_PATIENT } from "../../mutations/patient";
+import { Add_DOCTOR } from "../../mutations/doctors";
 
 Amplify.configure(CognitoConfig);
-// AWS.config.update({
-//   region: 'us-east-1',
-//   accessKeyId: 'AKIAUCIGS7I7YSIXZ3LJ',
-//   secretAccessKey: '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',
-// });
 
 interface RegisterFormValues {
   fullname: string;
@@ -68,6 +35,7 @@ interface EmailVerification {
   verificationCode: string;
 }
 export default function Register() {
+  let route = useRouter();
   let [emailVerificationStep, setEmailVerificationStep] = useState(false);
   let [user_type_of_currentUser, set_user_type_of_currentUser] = useState("");
   let [resendEmail, setResendEmail] = useState("");
@@ -89,8 +57,8 @@ export default function Register() {
     userType: "",
   });
 
-  const [addPatient, { loading, error }] = useMutation(Add_PATIENT);
-  const [addDoctor, docStatus] = useMutation(Add_DOCTOR);
+  const [addPatient] = useMutation(Add_PATIENT);
+  const [addDoctor] = useMutation(Add_DOCTOR);
 
   useAuth(setIsUserLoggedIn);
 
@@ -176,30 +144,29 @@ export default function Register() {
 
           if (user_type_of_currentUser == "Patient") {
             groupName = "Patient";
-            // Add Data To DynamoDB
-            // console.log("Adding Patient");
-            // await addPatient({
-            //   variables: {
-            //     patient_id: userData.email,
-            //     fullName: userData.fullname,
-            //     type: userData.userType,
-            //     email: userData.email,
-            //     phoneNumber: userData.phone,
-            //   },
-            // });
+            // Add Patient Record To DynamoDB
+            await addPatient({
+              variables: {
+                patient_id: username,
+                fullName: userData.fullname,
+                type: userData.userType,
+                email: userData.email,
+                phoneNumber: userData.phone,
+              },
+            });
           }
           if (user_type_of_currentUser == "Doctors") {
             groupName = "Doctors";
-            // console.log("Adding Doctor");
-            // await addDoctor({
-            //   variables: {
-            //     doctor_id: userData.email,
-            //     name: userData.fullname,
-            //     type: userData.userType,
-            //     email: userData.email,
-            //     phoneNumber: userData.phone,
-            //   },
-            // });
+            // Add Doctor Record To DynamoDB
+            await addDoctor({
+              variables: {
+                doctor_id: username,
+                name: userData.fullname,
+                type: userData.userType,
+                email: userData.email,
+                phoneNumber: userData.phone,
+              },
+            });
           }
 
           // Define the parameters for the adminAddUserToGroup function
@@ -216,7 +183,7 @@ export default function Register() {
                 console.error(error);
                 throw new Error("Error adding user to group");
               } else {
-                console.log(data);
+                redirect("/login");
               }
             }
           );
@@ -238,9 +205,11 @@ export default function Register() {
       setResendVerificationCode(true);
     }
   }
+
   return (
     <>
       <MainHeader isUserLoggedIn={isUserLoggedIn.status} />
+
       <Row>
         {/* Registration Form */}
         <Col lg={6}>

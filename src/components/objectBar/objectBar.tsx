@@ -5,8 +5,11 @@ import { Row, Col } from "react-bootstrap";
 
 interface ObjectData {
   type: string;
+  data: any;
+  setId: any;
+  fetchData: any;
 }
-const ObjectBar: React.FC<ObjectData> = ({ type }) => {
+const ObjectBar: React.FC<ObjectData> = ({ type, data, setId, fetchData }) => {
   return (
     <>
       <div className={styles.objectBarContainr}>
@@ -22,7 +25,7 @@ const ObjectBar: React.FC<ObjectData> = ({ type }) => {
           </Col>
           <Col lg={3}>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <p>Muhammad Asif Iqbal</p>
+              <p>{data.fullName}</p>
             </div>
           </Col>
           <Col lg={3}>
@@ -37,9 +40,16 @@ const ObjectBar: React.FC<ObjectData> = ({ type }) => {
               </>
             ) : (
               <>
-                <button>view</button>
-                <button>edit</button>
-                <button>delete</button>
+                <button
+                  onClick={() => {
+                    setId(data.patient_id);
+                    fetchData();
+                  }}
+                >
+                  View
+                </button>
+                {/* <button>edit</button>
+                <button>delete</button> */}
               </>
             )}
           </Col>

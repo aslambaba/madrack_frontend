@@ -14,6 +14,14 @@ import * as Yup from "yup";
 import { useRouter } from "next/router";
 import loginVector from "../../../public/loginVector.jpg";
 import PopupModal from "@/components/editProfile/popupModel";
+import { useMutation, useQuery } from "@apollo/client";
+import {
+  Update_Patient,
+  Update_Patient_Info,
+  Delete_Patient,
+} from "@/mutations/patient";
+import PatientRecord from "@/components/patients/patientRecord";
+import { getPatientRecord } from "../../../queries/patients";
 
 interface Doctor {
   doctorName: string;
@@ -40,11 +48,145 @@ interface PatientProfile {
   phoneNumber: string;
   address: string;
 }
-const PatientDashboard = () => {
+interface PatientProps {
+  username: string;
+}
+
+const PatientProfileForm: React.FC<any> = ({
+  username,
+  setIsModalOpen,
+  refetch,
+}) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const initialValuesOfPatientProfile: PatientProfile = {
+    fullName: `${username.fullName}`,
+    fatherName: `${username.fatherName}` || "",
+    cnicNumber: `${username.CNICNumber}` || "",
+    email: `${username.email}`,
+    phoneNumber: `${username.phoneNumber}`,
+    address: `${username.address}` || "",
+  };
+  const validationSchemaForPatientProfile = Yup.object().shape({
+    fullName: Yup.string().required("Full Name is required"),
+    fatherName: Yup.string().required("Father Name is required"),
+    cnicNumber: Yup.string()
+      .required("CNIC Number is required")
+      .matches(/^\d{5}-\d{7}-\d{1}$/, "CNIC Number is not valid"),
+    phoneNumber: Yup.string()
+      .required("Phone Number is required")
+      .matches(/^\+[1-9]\d{0,2}-\d{3}-\d{7}$/, "Phone Number is not valid"),
+    address: Yup.string().required("Address is required"),
+  });
+
+  const [updatePatientInfo] = useMutation(Update_Patient_Info);
+
+  const handleSubmit: any = async (
+    values: PatientProfile,
+    { setSubmitting }: FormikProps<PatientProfile>
+  ) => {
+    await updatePatientInfo({
+      variables: {
+        patient_id: username.patient_id,
+        fullName: values.fullName,
+        fatherName: values.fatherName,
+        email: values.email,
+        CNICNumber: values.cnicNumber,
+        phoneNumber: values.phoneNumber,
+        address: values.address,
+        type: "Patient",
+      },
+    });
+    setIsModalOpen(false);
+    refetch();
+    setSubmitting(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <PopupModal onClose={handleCloseModal}>
+      <Formik
+        initialValues={initialValuesOfPatientProfile}
+        validationSchema={validationSchemaForPatientProfile}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched, handleChange, handleSubmit }) => (
+          <Form className={styles.FieldContainer}>
+            <Row>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="fullName">Full Name</label>
+                  <Field type="text" name="fullName" />
+                  <ErrorMessage name="fullName" component="div" />
+                </div>
+              </Col>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="fatherName">Father Name</label>
+                  <Field type="text" name="fatherName" />
+                  <ErrorMessage name="fatherName" component="div" />
+                </div>
+              </Col>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="cnicNumber">CNIC Number</label>
+                  <Field type="text" name="cnicNumber" />
+                  <ErrorMessage name="cnicNumber" component="div" />
+                </div>
+              </Col>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="email">Email</label>
+                  <Field type="text" name="email" disabled />
+                </div>
+              </Col>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="phoneNumber">Phone Number</label>
+                  <Field type="text" name="phoneNumber" />
+                  <ErrorMessage name="phoneNumber" component="div" />
+                </div>
+              </Col>
+              <Col lg={6} md={6} sm={12}>
+                <div className={styles.Field}>
+                  <label htmlFor="address">Address</label>
+                  <Field type="text" name="address" />
+                  <ErrorMessage name="address" component="div" />
+                </div>
+              </Col>
+            </Row>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={styles.RecordFormBtn}
+            >
+              Submit
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </PopupModal>
+  );
+};
+
+const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
   const router = useRouter();
 
+  let patientRecord = useQuery(getPatientRecord, {
+    variables: { patientId: username },
+  });
   const [newRecordPopup, setNewRecordPopup] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [updatePatient] = useMutation(Update_Patient);
+  if (patientRecord.error) {
+    console.log(patientRecord.error);
+  }
+
+  const [deletePatient] = useMutation(Delete_Patient);
   const initialValues: FormValues = {
     diseaseName: "",
     description: "",
@@ -62,24 +204,15 @@ const PatientDashboard = () => {
     ],
   };
 
-  const initialValuesOfPatientProfile: PatientProfile = {
-    fullName: "",
-    fatherName: "",
-    cnicNumber: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-  };
-
   const validationSchema = Yup.object().shape({
     diseaseName: Yup.string().required("Required"),
     description: Yup.string().required("Required"),
     startDate: Yup.date()
       .required("Required")
-      .min(Yup.ref("endDate"), "Start date must be before end date"),
+      .max(Yup.ref("endDate"), "Start date must be before end date"),
     endDate: Yup.date()
       .required("Required")
-      .max(Yup.ref("startDate"), "End date must be after start date"),
+      .min(Yup.ref("startDate"), "End date must be after start date"),
     status: Yup.string()
       .required("Required")
       .oneOf(["pending", "completed", "cancelled"]),
@@ -89,170 +222,132 @@ const PatientDashboard = () => {
         hospitalName: Yup.string().required("Required"),
         startDate: Yup.date()
           .required("Required")
-          .min(Yup.ref("endDate"), "Start date must be before end date"),
+          .max(Yup.ref("endDate"), "Start date must be before end date"),
         endDate: Yup.date()
           .required("Required")
-          .max(Yup.ref("startDate"), "End date must be after start date"),
+          .min(Yup.ref("startDate"), "End date must be after start date"),
         doctorDescription: Yup.string().required("Required"),
       })
     ),
   });
-
-  const validationSchemaForPatientProfile = Yup.object().shape({
-    fullName: Yup.string().required("Full Name is required"),
-    fatherName: Yup.string().required("Father Name is required"),
-    cnicNumber: Yup.string()
-      .required("CNIC Number is required")
-      .matches(/^\d{5}-\d{7}-\d{1}$/, "CNIC Number is not valid"),
-    phoneNumber: Yup.string()
-      .required("Phone Number is required")
-      .matches(/^\+[1-9]\d{0,2}-\d{3}-\d{7}$/, "Phone Number is not valid"),
-    address: Yup.string().required("Address is required"),
-  });
-
-  const handleSubmitForEditProfile = (
-    values: PatientProfile,
-    { setSubmitting }: FormikProps<PatientProfile>
-  ) => {
-    console.log(values);
-    setSubmitting(false);
-  };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (values: FormValues) => {
+  const RefetchData = () => {
+    patientRecord.refetch();
+  };
+  const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      alert(JSON.stringify(values, null, 2));
-      setIsSubmitting(false);
-    }, 1000);
+
+    let oldRec = patientRecord.data.getPatientRecord.disease;
+    const cleanPatient = JSON.parse(JSON.stringify(oldRec), (key, value) =>
+      key === "__typename" || key === "prototype" || key === "_id"
+        ? undefined
+        : value
+    );
+    let newarry = [values, ...cleanPatient];
+    console.log("Bebo", newarry);
+
+    await updatePatient({
+      variables: {
+        patient_id: username,
+        disease: newarry,
+      },
+    });
+    RefetchData();
+    setNewRecordPopup(false);
   };
 
+  const deletePatientRec = async (id: string) => {
+    let patientDiseases = patientRecord.data.getPatientRecord.disease;
+    const updateDiseases = patientDiseases.filter(
+      (doctor: any) => doctor._id !== id
+    );
+    const cleanPatient = JSON.parse(
+      JSON.stringify(updateDiseases),
+      (key, value) =>
+        key === "__typename" || key === "prototype" || key === "_id"
+          ? undefined
+          : value
+    );
+    await updatePatient({
+      variables: {
+        patient_id: username,
+        disease: cleanPatient,
+      },
+    });
+    patientRecord.refetch();
+  };
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
   return (
     <>
       {isModalOpen && (
-        <PopupModal onClose={handleCloseModal}>
-          <Formik
-            initialValues={initialValuesOfPatientProfile}
-            validationSchema={validationSchemaForPatientProfile}
-            onSubmit={handleSubmitForEditProfile}
-          >
-            {({ isSubmitting, errors, touched }) => (
-              <Form className={styles.FieldContainer}>
-                <Row>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="fullName">Full Name</label>
-                      <Field type="text" name="fullName" />
-                      <ErrorMessage name="fullName" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="fatherName">Father Name</label>
-                      <Field type="text" name="fatherName" />
-                      <ErrorMessage name="fatherName" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="cnicNumber">CNIC Number</label>
-                      <Field type="text" name="cnicNumber" />
-                      <ErrorMessage name="cnicNumber" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="email">Email</label>
-                      <Field type="text" name="email" disabled />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="phoneNumber">Phone Number</label>
-                      <Field type="text" name="phoneNumber" />
-                      <ErrorMessage name="phoneNumber" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="address">Address</label>
-                      <Field type="text" name="address" />
-                      <ErrorMessage name="address" component="div" />
-                    </div>
-                  </Col>
-                </Row>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={styles.RecordFormBtn}
-                >
-                  Submit
-                </button>
-              </Form>
-            )}
-          </Formik>
-        </PopupModal>
+        <PatientProfileForm
+          username={patientRecord.data.getPatientRecord}
+          setIsModalOpen={setIsModalOpen}
+          refetch={RefetchData}
+        />
       )}
       <Row>
         <Col lg={4} md={4}>
-          <div className={styles.dashboardProfileSec}>
-            <div style={{ textAlign: "center" }}>
-              <Image
-                alt="profile picture"
-                src={loginVector}
-                height={100}
-                width={100}
-              />
-            </div>
+          {patientRecord.data ? (
+            <>
+              <div className={styles.dashboardProfileSec}>
+                <div style={{ textAlign: "center" }}>
+                  <Image
+                    alt="profile picture"
+                    src={loginVector}
+                    height={100}
+                    width={100}
+                  />
+                </div>
 
-            <h3>Aslam Sarfraz</h3>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Full Name</b>
-              </p>
-              <p>Aslam Sarfraz</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Father Name</b>
-              </p>
-              <p>Nusrat Iqbal</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>CNIC</b>
-              </p>
-              <p>35202-3596398-9</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Email</b>
-              </p>
-              <p>aslam91r@gmail.com</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Phone Number</b>
-              </p>
-              <p>+923048790325</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Address</b>
-              </p>
-              <br />
-              <p>House BIII-650, Farid Gate Bahwalpur, Punjab, Pakistan</p>
-            </div>
-            <button onClick={handleOpenModal}>Edit Profile</button>
-          </div>
+                <h3>Aslam Sarfraz</h3>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Full Name</b>
+                  </p>
+                  <p>{`${patientRecord.data.getPatientRecord.fullName}`}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Father Name</b>
+                  </p>
+                  <p>{`${patientRecord.data.getPatientRecord.fatherName}`}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>CNIC</b>
+                  </p>
+                  <p>{`${patientRecord.data.getPatientRecord.CNICNumber}`}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Email</b>
+                  </p>
+                  <p>{`${patientRecord.data.getPatientRecord.email}`}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Phone Number</b>
+                  </p>
+                  <p>{`${patientRecord.data.getPatientRecord.phoneNumber}`}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Address</b>
+                  </p>
+                  <br />
+                  <p>{`${patientRecord.data.getPatientRecord.address}`}</p>
+                </div>
+                <button onClick={handleOpenModal}>Edit Profile</button>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
         </Col>
         <Col lg={8} md={8}>
           <div className={styles.dashboardReportsSec}>
@@ -301,7 +396,7 @@ const PatientDashboard = () => {
                         type="date"
                         id="startDate"
                         name="startDate"
-                        value={values.startDate.toISOString().substr(0, 10)}
+                        value={values.startDate.toString().substr(0, 10)}
                         onChange={handleChange}
                       />
                       <ErrorMessage name="startDate" />
@@ -313,7 +408,7 @@ const PatientDashboard = () => {
                         type="date"
                         id="endDate"
                         name="endDate"
-                        value={values.endDate.toISOString().substr(0, 10)}
+                        value={values.endDate.toString().substr(0, 10)}
                         onChange={handleChange}
                       />
                       <ErrorMessage name="endDate" />
@@ -418,7 +513,9 @@ const PatientDashboard = () => {
                                   </div>
 
                                   <div className={styles.Field}>
-                                    <label htmlFor={`doctors.${index}.review`}>
+                                    <label
+                                      htmlFor={`doctors.${index}.doctorDescription`}
+                                    >
                                       Doctor Review:
                                     </label>
                                     <textarea
@@ -450,7 +547,7 @@ const PatientDashboard = () => {
                                   hospitalName: "",
                                   startDate: "",
                                   endDate: "",
-                                  review: "",
+                                  doctorDescription: "",
                                 })
                               }
                             >
@@ -467,6 +564,17 @@ const PatientDashboard = () => {
                   </Form>
                 )}
               </Formik>
+            ) : (
+              <></>
+            )}
+            {patientRecord.data ? (
+              <div>
+                <PatientRecord
+                  record={patientRecord.data.getPatientRecord}
+                  from="patient"
+                  deletePatient={deletePatientRec}
+                />
+              </div>
             ) : (
               <></>
             )}

@@ -25,7 +25,7 @@ export default function Dashboard() {
         {isUserLoggedIn.groupname == "Patient" ? (
           <>
             <h2>Patient Dashboard</h2>
-            <PatientDashboard />
+            <PatientDashboard username={isUserLoggedIn.username} />
           </>
         ) : (
           <></>
@@ -33,12 +33,12 @@ export default function Dashboard() {
         {isUserLoggedIn.groupname == "Doctors" ? (
           <>
             <h2>Doctors Dashboard</h2>
-            <DoctorDashboard />
+            <DoctorDashboard username={isUserLoggedIn.username}/>
           </>
         ) : (
           <></>
         )}
-        {isUserLoggedIn.groupname == "Admin" ? (
+        {isUserLoggedIn.groupname == "admin" ? (
           <>
             <>
               <h2>Madrack team Dashboard</h2>

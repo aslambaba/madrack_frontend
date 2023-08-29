@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./dashboardstyle.module.css";
 import Image from "next/image";
 import { Row, Col } from "react-bootstrap";
@@ -15,34 +15,31 @@ import { useRouter } from "next/router";
 import loginVector from "../../../public/loginVector.jpg";
 import PopupModal from "@/components/editProfile/popupModel";
 import ObjectBar from "@/components/objectBar/objectBar";
+import { getAllPatients, getPatientRecord } from "../../../queries/patients";
+import { useQuery, useLazyQuery } from "@apollo/client";
+import PatientRecord from "@/components/patients/patientRecord";
 
 const AdminDashbord = () => {
-  const router = useRouter();
   const [currentTab, setCurrentTab] = useState("home");
+  const [patientID, setPatientID] = useState("");
+  const getPatientRec = useQuery(getAllPatients);
 
-  const students = [
-    { name: "1Aslam" },
-    { name: "2Usama" },
-    { name: "3Yasin" },
-    { name: "4Rehan" },
-    { name: "5Iqbal" },
-    { name: "6Asif" },
-    { name: "7Aslam" },
-    { name: "8Usama" },
-    { name: "9Yasin" },
-    { name: "10Rehan" },
-    { name: "11Iqbal" },
-    { name: "12Asif" },
-    { name: "13Aslam" },
-    { name: "14Usama" },
-    { name: "15Yasin" },
-    { name: "16Rehan" },
-    { name: "17Iqbal" },
-    { name: "18Sarfraz" },
-  ];
+  let [getpatient, singlePatientRecord] = useLazyQuery(getPatientRecord, {
+    variables: { patientId: patientID },
+  });
+  if (singlePatientRecord.data) {
+    console.log(singlePatientRecord.data);
+  }
+  if (getPatientRec.error) {
+    console.log(getPatientRec.error);
+  }
+  let Patinets = [];
+  if (getPatientRec.data) {
+    Patinets = getPatientRec.data.getAllPatients;
+  }
   const [currentPage, setCurrentPage] = useState(1);
   const studentsPerPage = 15;
-  const totalPages = Math.ceil(students.length / studentsPerPage);
+  const totalPages = Math.ceil(Patinets.length / studentsPerPage);
 
   const prevButtonDisabled = currentPage === 1;
   const nextButtonDisabled = currentPage === totalPages;
@@ -53,7 +50,7 @@ const AdminDashbord = () => {
 
   const startIndex = (currentPage - 1) * studentsPerPage;
   const endIndex = startIndex + studentsPerPage;
-  const currentStudents = students.slice(startIndex, endIndex);
+  const currentStudents = Patinets.slice(startIndex, endIndex);
   return (
     <>
       <Row>
@@ -106,43 +103,60 @@ const AdminDashbord = () => {
               <>
                 <h3>Patients</h3>
                 <br />
-                <ul>
-                  {currentStudents.map((student) => (
-                    <ObjectBar type="patients"/>
-                  ))}
-                </ul>
-                <div>
-                  <button
-                    className={styles.paginationButton}
-                    disabled={prevButtonDisabled}
-                    onClick={() => handleClick(currentPage - 1)}
-                  >
-                    Prev
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (pageNumber) => (
+                {patientID == "" ? (
+                  <>
+                    <ul>
+                      {currentStudents.map((pat: any) => (
+                        <ObjectBar
+                          type="patients"
+                          data={pat}
+                          setId={setPatientID}
+                          fetchData={getpatient}
+                        />
+                      ))}
+                    </ul>
+                    <div>
                       <button
-                        key={pageNumber}
                         className={styles.paginationButton}
-                        onClick={() => handleClick(pageNumber)}
-                        style={{
-                          fontWeight:
-                            pageNumber === currentPage ? "bold" : "normal",
-                        }}
-                        disabled={pageNumber === currentPage}
+                        disabled={prevButtonDisabled}
+                        onClick={() => handleClick(currentPage - 1)}
                       >
-                        {pageNumber}
+                        Prev
                       </button>
-                    )
-                  )}
-                  <button
-                    className={styles.paginationButton}
-                    disabled={nextButtonDisabled}
-                    onClick={() => handleClick(currentPage + 1)}
-                  >
-                    Next
-                  </button>
-                </div>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (pageNumber) => (
+                          <button
+                            key={pageNumber}
+                            className={styles.paginationButton}
+                            onClick={() => handleClick(pageNumber)}
+                            style={{
+                              fontWeight:
+                                pageNumber === currentPage ? "bold" : "normal",
+                            }}
+                            disabled={pageNumber === currentPage}
+                          >
+                            {pageNumber}
+                          </button>
+                        )
+                      )}
+                      <button
+                        className={styles.paginationButton}
+                        disabled={nextButtonDisabled}
+                        onClick={() => handleClick(currentPage + 1)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setPatientID("")}>Back</button>
+                    <PatientRecord
+                      from="doctor"
+                      record={singlePatientRecord.data.getPatientRecord}
+                    />
+                  </>
+                )}
               </>
             ) : (
               <></>
@@ -153,7 +167,7 @@ const AdminDashbord = () => {
                 <br />
                 <ul>
                   {currentStudents.map((student) => (
-                    <ObjectBar type="doctors"/>
+                    <ObjectBar type="doctors" />
                   ))}
                 </ul>
                 <div>
@@ -198,7 +212,7 @@ const AdminDashbord = () => {
                 <br />
                 <ul>
                   {currentStudents.map((student) => (
-                    <ObjectBar type="request"/>
+                    <ObjectBar type="request" />
                   ))}
                 </ul>
                 <div>

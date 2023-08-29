@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./dashboardstyle.module.css";
 import Image from "next/image";
 import { Row, Col } from "react-bootstrap";
@@ -12,10 +12,12 @@ import {
   insert,
 } from "formik";
 import * as Yup from "yup";
-import { useRouter } from "next/router";
 import loginVector from "../../../public/loginVector.jpg";
-import PopupModal from "@/components/editProfile/popupModel";
 import PatientRecord from "@/components/patients/patientRecord";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { getPatientRecordByEmail } from "../../../queries/patients";
+import { GetDoctorRecord } from "../../../queries/doctors";
+import { Update_Doctor } from "../../mutations/doctors";
 
 interface Degree {
   degreeName: string;
@@ -35,310 +37,342 @@ interface DoctorProfile {
   degree: Degree[];
   experience: professonalExperience[];
 }
+interface PatientProps {
+  username: string;
+}
 
-const DoctorDashboard = () => {
-  const router = useRouter();
+const DoctorEditProfilePopup: React.FC<any> = ({
+  username,
+  setEditProfileSec,
+  RefetchData,
+}) => {
+  let [updateDoctor] = useMutation(Update_Doctor);
 
-  const [newRecordPopup, setNewRecordPopup] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const initialValuesOfDoctorProfile: DoctorProfile = {
-    doctorName: "",
-    CNIC: "",
-    email: "",
+  const initialValues = {
+    name: "",
+    cnic: "",
+    email: "as@gmail.com",
     phoneNumber: "",
     clinicAddress: "",
-    degree: [
-      {
-        degreeName: "",
-        instituteName: "",
-        passingYear: new Date(),
-      },
-    ],
-    experience: [
-      {
-        positionName: "",
-        hospitalName: "",
-      },
-    ],
+    degrees: [{ degreeName: "", instituteName: "", passingYear: "" }],
+    experiences: [{ positionName: "", hospitalName: "" }],
   };
 
-  const validateSchemaForDoctorProfile = Yup.object().shape({
-    doctorName: Yup.string().required("Name is Required"),
-    CNIC: Yup.string().required("CNIC is Required"),
-    email: Yup.string().required("Email is Required"),
-    phoneNumber: Yup.string().required("Phone Number is Required"),
-    clinicAddress: Yup.string().required("Clinic Address is Required"),
-    degree: Yup.array().of(
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    cnic: Yup.string().required("CNIC is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    phoneNumber: Yup.string().required("Phone number is required"),
+    clinicAddress: Yup.string().required("Clinic address is required"),
+    degrees: Yup.array().of(
       Yup.object().shape({
-        degreeName: Yup.string().required("Degree Name is Required"),
-        institureName: Yup.string().required("Institute Name is Required"),
-        passingYear: Yup.date().required("Passing Year is Required"),
+        degreeName: Yup.string().required("Degree name is required"),
+        instituteName: Yup.string().required("Institute name is required"),
+        passingYear: Yup.string().required("Passing year is required"),
       })
     ),
-    experience: Yup.array().of(
+    experiences: Yup.array().of(
       Yup.object().shape({
-        positionName: Yup.string().required("Position Name is Required"),
-        hospitalName: Yup.string().required("Hospital Name is Required"),
+        positionName: Yup.string().required("Position name is required"),
+        hospitalName: Yup.string().required("Hospital name is required"),
       })
     ),
   });
-  const handleSubmitForEditProfile = (
-    values: DoctorProfile,
-    { setSubmitting }: FormikProps<DoctorProfile>
-  ) => {
+
+  const handleSubmit = async (values: any) => {
     console.log(values);
-    setSubmitting(false);
+    await updateDoctor({
+      variables: {
+        name: values.name,
+        doctor_id: username,
+        CNICNumber: values.cnic,
+        email: values.email,
+        type: "Doctor",
+        phoneNumber: values.phoneNumber,
+        clinicAddress: values.clinicAddress,
+        degree: values.degrees,
+        experience: values.experiences,
+      },
+    });
+    setEditProfileSec(false);
+    RefetchData();
   };
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
+  return (
+    <div>
+      <div style={{ textAlign: "right" }}>
+        <button
+          className={styles.removeItemBtn}
+          onClick={() => setEditProfileSec(false)}
+        >
+          Cancel
+        </button>
+      </div>
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ values }) => (
+          <Form className={styles.FieldContainer}>
+            <Row>
+              <Col lg={6}>
+                <div className={styles.Field}>
+                  <label htmlFor="name">Name</label>
+                  <Field type="text" id="name" name="name" />
+                  <ErrorMessage name="name" component="div" className="error" />
+                </div>
+              </Col>
+              <Col lg={6}>
+                <div className={styles.Field}>
+                  <label htmlFor="cnic">CNIC</label>
+                  <Field type="text" id="cnic" name="cnic" />
+                  <ErrorMessage name="cnic" component="div" className="error" />
+                </div>
+              </Col>
+              <Col lg={6}>
+                <div className={styles.Field}>
+                  <label htmlFor="email">Email</label>
+                  <Field type="email" id="email" name="email" disabled />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="error"
+                  />
+                </div>
+              </Col>
+              <Col lg={6}>
+                <div className={styles.Field}>
+                  <label htmlFor="phoneNumber">Phone Number</label>
+                  <Field type="text" id="phoneNumber" name="phoneNumber" />
+                  <ErrorMessage
+                    name="phoneNumber"
+                    component="div"
+                    className="error"
+                  />
+                </div>
+              </Col>
+              <Col lg={6}>
+                <div className={styles.Field}>
+                  <label htmlFor="clinicAddress">Clinic Address</label>
+                  <Field
+                    as="textarea"
+                    id="clinicAddress"
+                    name="clinicAddress"
+                  />
+                  <ErrorMessage
+                    name="clinicAddress"
+                    component="div"
+                    className="error"
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <div>
+              <label>Degrees</label>
+              <FieldArray name="degrees">
+                {({ push, remove }) => (
+                  <>
+                    {values.degrees.map((_, index) => (
+                      <div key={index}>
+                        <Row>
+                          <Col lg={6}>
+                            <div className={styles.Field}>
+                              <label htmlFor={`degrees[${index}].degreeName`}>
+                                Degree Name
+                              </label>
+                              <Field
+                                type="text"
+                                id={`degrees[${index}].degreeName`}
+                                name={`degrees[${index}].degreeName`}
+                              />
+                              <ErrorMessage
+                                name={`degrees[${index}].degreeName`}
+                                component="div"
+                                className="error"
+                              />
+                            </div>
+                          </Col>
+                          <Col lg={6}>
+                            <div className={styles.Field}>
+                              <label
+                                htmlFor={`degrees[${index}].instituteName`}
+                              >
+                                Institute Name
+                              </label>
+                              <Field
+                                type="text"
+                                id={`degrees[${index}].instituteName`}
+                                name={`degrees[${index}].instituteName`}
+                              />
+                              <ErrorMessage
+                                name={`degrees[${index}].instituteName`}
+                                component="div"
+                                className="error"
+                              />
+                            </div>
+                          </Col>
+                          <Col lg={6}>
+                            <div className={styles.Field}>
+                              <label htmlFor={`degrees[${index}].passingYear`}>
+                                Passing Year
+                              </label>
+                              <Field
+                                type="text"
+                                id={`degrees[${index}].passingYear`}
+                                name={`degrees[${index}].passingYear`}
+                              />
+                              <ErrorMessage
+                                name={`degrees[${index}].passingYear`}
+                                component="div"
+                                className="error"
+                              />
+                            </div>
+                          </Col>
+                          <Col lg={6}>
+                            <button
+                              style={{ marginTop: "30px" }}
+                              className={styles.removeItemBtn}
+                              type="button"
+                              onClick={() => remove(index)}
+                            >
+                              Remove Degree
+                            </button>
+                          </Col>
+                        </Row>
+                      </div>
+                    ))}
+
+                    <button
+                      style={{ marginLeft: "30px" }}
+                      className={styles.addItemBtn}
+                      type="button"
+                      onClick={() =>
+                        push({
+                          degreeName: "",
+                          instituteName: "",
+                          passingYear: "",
+                        })
+                      }
+                    >
+                      Add Degree
+                    </button>
+                  </>
+                )}
+              </FieldArray>
+            </div>
+
+            <div>
+              <label>Experiences</label>
+              <FieldArray name="experiences">
+                {({ push, remove }) => (
+                  <>
+                    {values.experiences.map((_, index) => (
+                      <div key={index}>
+                        <Row>
+                          <Col lg={6}>
+                            <div className={styles.Field}>
+                              <label
+                                htmlFor={`experiences[${index}].positionName`}
+                              >
+                                Position Name
+                              </label>
+                              <Field
+                                type="text"
+                                id={`experiences[${index}].positionName`}
+                                name={`experiences[${index}].positionName`}
+                              />
+                              <ErrorMessage
+                                name={`experiences[${index}].positionName`}
+                                component="div"
+                                className="error"
+                              />
+                            </div>
+                          </Col>
+                          <Col lg={6}>
+                            <div className={styles.Field}>
+                              <label
+                                htmlFor={`experiences[${index}].hospitalName`}
+                              >
+                                Hospital Name
+                              </label>
+                              <Field
+                                type="text"
+                                id={`experiences[${index}].hospitalName`}
+                                name={`experiences[${index}].hospitalName`}
+                              />
+                              <ErrorMessage
+                                name={`experiences[${index}].hospitalName`}
+                                component="div"
+                                className="error"
+                              />
+                            </div>
+                          </Col>
+                          <Col lg={6}>
+                            <button
+                              style={{ marginTop: "30px" }}
+                              className={styles.removeItemBtn}
+                              type="button"
+                              onClick={() => remove(index)}
+                            >
+                              Remove Experience
+                            </button>
+                          </Col>
+                        </Row>
+                      </div>
+                    ))}
+
+                    <button
+                      style={{ marginLeft: "30px" }}
+                      className={styles.addItemBtn}
+                      type="button"
+                      onClick={() =>
+                        push({ positionName: "", hospitalName: "" })
+                      }
+                    >
+                      Add Experience
+                    </button>
+                  </>
+                )}
+              </FieldArray>
+            </div>
+
+            <button className={styles.addItemBtn} type="submit">
+              Submit
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+const DoctorDashboard: React.FC<PatientProps> = ({ username }) => {
+  const [newRecordPopup, setNewRecordPopup] = useState<boolean>(false);
+  const [EditProfileSec, setEditProfileSec] = useState(false);
+  const [profileComplete, setProfileComplete] = useState<boolean>();
+
+  const [patientID, setPatientID] = useState("");
+
+  let getDoctorRecord = useQuery(GetDoctorRecord, {
+    variables: { doctorId: username },
+  });
+  let [getpatient, patientRecord] = useLazyQuery(getPatientRecordByEmail, {
+    variables: { email: patientID },
+  });
+  function RefetchData() {
+    getDoctorRecord.refetch();
+  }
+  if (patientRecord.data) {
+    console.log(patientRecord);
+  }
+  if (patientRecord.error) {
+    alert("Not FOunt");
+  }
   return (
     <>
-      {isModalOpen && (
-        <PopupModal onClose={handleCloseModal}>
-          <Formik
-            initialValues={initialValuesOfDoctorProfile}
-            validationSchema={validateSchemaForDoctorProfile}
-            onSubmit={handleSubmitForEditProfile}
-          >
-            {({
-              values,
-              isSubmitting,
-              errors,
-              touched,
-              handleChange,
-              handleSubmit,
-            }) => (
-              <Form className={styles.FieldContainer}>
-                <Row>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="doctorName">Doctor Name</label>
-                      <Field type="text" name="doctorName" />
-                      <ErrorMessage name="doctorName" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="cnicNumber">CNIC Number</label>
-                      <Field type="text" name="cnicNumber" />
-                      <ErrorMessage name="cnicNumber" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="email">Email</label>
-                      <Field type="text" name="email" disabled />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="phoneNumber">Phone Number</label>
-                      <Field type="text" name="phoneNumber" />
-                      <ErrorMessage name="phoneNumber" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={6} md={6} sm={12}>
-                    <div className={styles.Field}>
-                      <label htmlFor="clinicAddress">Clinic Address</label>
-                      <Field type="text" name="clinicAddress" />
-                      <ErrorMessage name="clinicAddress" component="div" />
-                    </div>
-                  </Col>
-                  <Col lg={12} md={12}>
-                    <div className={styles.addNewDegreeSec}>
-                      <label>Degrees</label>
-                      <br />
-                      <FieldArray name="degree">
-                        {({ insert, push, remove }) => (
-                          <div>
-                            {values.degree.length > 0 &&
-                              values.degree.map((deg, index) => (
-                                <div key={index}>
-                                  <Row>
-                                    <Col lg={6} md={6} sm={12}>
-                                      <div className={styles.Field}>
-                                        <label
-                                          htmlFor={`degree.${index}.degreeName`}
-                                        >
-                                          Degree Name
-                                        </label>
-                                        <input
-                                          type="text"
-                                          id={`degree.${index}.degreeName`}
-                                          name={`degree.${index}.degreeName`}
-                                          value={deg.degreeName}
-                                          onChange={handleChange}
-                                        />
-                                        <ErrorMessage
-                                          name={`degree.${index}.degreeName`}
-                                        />
-                                      </div>
-                                    </Col>
-                                    <Col lg={6} md={6} sm={12}>
-                                      <div className={styles.Field}>
-                                        <label
-                                          htmlFor={`degree.${index}.instituteName`}
-                                        >
-                                          Institute Name
-                                        </label>
-                                        <input
-                                          type="text"
-                                          id={`degree.${index}.instituteName`}
-                                          name={`degree.${index}.instituteName`}
-                                          value={deg.instituteName}
-                                          onChange={handleChange}
-                                        />
-                                        <ErrorMessage
-                                          name={`degree.${index}.instituteName`}
-                                        />
-                                      </div>
-                                    </Col>
-                                    <Col lg={6} md={6} sm={12}>
-                                      <div className={styles.Field}>
-                                        <label
-                                          htmlFor={`degree.${index}.passingYear`}
-                                        >
-                                          Start Date:
-                                        </label>
-                                        <input
-                                          type="date"
-                                          id={`degree.${index}.passingYear`}
-                                          name={`degree.${index}.passingYear`}
-                                          value={deg.passingYear
-                                            .toString()
-                                            .substr(0, 10)}
-                                          onChange={handleChange}
-                                        />
-                                        <ErrorMessage
-                                          name={`degree.${index}.passingYear`}
-                                        />
-                                      </div>
-                                    </Col>
-                                    <button
-                                      type="button"
-                                      onClick={() => remove(index)}
-                                      className={styles.RecordFormBtn}
-                                    >
-                                      Remove
-                                    </button>
-                                  </Row>
-                                </div>
-                              ))}
-                            <button
-                              type="button"
-                              className={styles.RecordFormBtn}
-                              onClick={() =>
-                                push({
-                                  degreeName: "",
-                                  InsitituteName: "",
-                                  passingYear: "",
-                                })
-                              }
-                            >
-                              Add Doctor
-                            </button>
-                          </div>
-                        )}
-                      </FieldArray>
-                    </div>
-                  </Col>
-                  <Col lg={12} md={12}>
-                    <div className={styles.addNewExpSec}>
-                      <label>Experience</label>
-                      <FieldArray name="experience">
-                        {({ insert, push, remove }) => (
-                          <div>
-                            {values.experience.length > 0 &&
-                              values.experience.map((exp, index) => (
-                                <div key={index}>
-                                  <Row>
-                                    <Col lg={6} md={6} sm={12}>
-                                      <div className={styles.Field}>
-                                        <label
-                                          htmlFor={`experience.${index}.positionName`}
-                                        >
-                                          Position Name
-                                        </label>
-                                        <input
-                                          type="text"
-                                          id={`experience.${index}.positionName`}
-                                          name={`experience.${index}.positionName`}
-                                          value={exp.positionName}
-                                          onChange={handleChange}
-                                        />
-                                        <ErrorMessage
-                                          name={`experience.${index}.positionName`}
-                                        />
-                                      </div>
-                                    </Col>
-                                    <Col lg={6} md={6} sm={12}>
-                                      <div className={styles.Field}>
-                                        <label
-                                          htmlFor={`experience.${index}.hospitalName`}
-                                        >
-                                          Hospital Name
-                                        </label>
-                                        <input
-                                          type="text"
-                                          id={`experience.${index}.hospitalName`}
-                                          name={`experience.${index}.hospitalName`}
-                                          value={exp.hospitalName}
-                                          onChange={handleChange}
-                                        />
-                                        <ErrorMessage
-                                          name={`experience.${index}.hospitalName`}
-                                        />
-                                      </div>
-                                    </Col>
-                                    <button
-                                      className={styles.RecordFormBtn}
-                                      onClick={() => {
-                                        remove(index);
-                                      }}
-                                    >
-                                      Remove
-                                    </button>
-                                  </Row>
-                                </div>
-                              ))}
-                            <button
-                              className={styles.RecordFormBtn}
-                              onClick={() => {
-                                push({
-                                  positionName: "",
-                                  hospitalName: "",
-                                });
-                              }}
-                            >
-                              Add Experienve
-                            </button>
-                          </div>
-                        )}
-                      </FieldArray>
-                    </div>
-                  </Col>
-                </Row>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={styles.RecordFormBtn}
-                >
-                  Submit
-                </button>
-              </Form>
-            )}
-          </Formik>
-        </PopupModal>
-      )}
       <Row>
         <Col lg={4} md={4}>
           <div className={styles.dashboardProfileSec}>
@@ -350,60 +384,125 @@ const DoctorDashboard = () => {
                 width={100}
               />
             </div>
+            {getDoctorRecord.data ? (
+              <>
+                <h3>{getDoctorRecord.data.getDoctorRecord.name || "Na"}</h3>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Full Name</b>
+                  </p>
+                  <p>{getDoctorRecord.data.getDoctorRecord.name || "Na"}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>CNIC</b>
+                  </p>
+                  <p>
+                    {getDoctorRecord.data.getDoctorRecord.CNICNumber || "Na"}
+                  </p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Email</b>
+                  </p>
+                  <p>{getDoctorRecord.data.getDoctorRecord.email || "Na"}</p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Phone Number</b>
+                  </p>
+                  <p>
+                    {getDoctorRecord.data.getDoctorRecord.phoneNumber || "Na"}
+                  </p>
+                </div>
+                <div className={styles.personalInfo}>
+                  <p>
+                    <b>Address</b>
+                  </p>
+                  <br />
+                  <p>
+                    {getDoctorRecord.data.getDoctorRecord.clinicAddress || "Na"}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <></>
+            )}
 
-            <h3>Aslam Sarfraz</h3>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Full Name</b>
-              </p>
-              <p>Aslam Sarfraz</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Father Name</b>
-              </p>
-              <p>Nusrat Iqbal</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>CNIC</b>
-              </p>
-              <p>35202-3596398-9</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Email</b>
-              </p>
-              <p>aslam91r@gmail.com</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Phone Number</b>
-              </p>
-              <p>+923048790325</p>
-            </div>
-            <div className={styles.personalInfo}>
-              <p>
-                <b>Address</b>
-              </p>
-              <br />
-              <p>House BIII-650, Farid Gate Bahwalpur, Punjab, Pakistan</p>
-            </div>
-            <button onClick={handleOpenModal}>Edit Profile</button>
+            <button onClick={() => setEditProfileSec(true)}>
+              Edit Profile
+            </button>
           </div>
         </Col>
         <Col lg={8} md={8}>
           <div className={styles.dashboardReportsSec}>
-            <div className={styles.requestPatientRec}>
-              <input placeholder="Patient ID"></input>
-              <button onClick={() => setNewRecordPopup(true)}>Search</button>
-            </div>
-            {newRecordPopup ? (
+            {EditProfileSec ? (
               <>
-                <PatientRecord />
+                <DoctorEditProfilePopup
+                  username={username}
+                  setEditProfileSec={setEditProfileSec}
+                  RefetchData={RefetchData}
+                />
               </>
             ) : (
-              <></>
+              <>
+                {getDoctorRecord.data ? (
+                  <>
+                    {getDoctorRecord.data.getDoctorRecord.CNICNumber != null &&
+                    getDoctorRecord.data.getDoctorRecord.clinicAddress !=
+                      null ? (
+                      <>
+                        <div className={styles.requestPatientRec}>
+                          <input
+                            value={patientID}
+                            placeholder="Patient ID"
+                            required
+                            onChange={(
+                              event: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              setPatientID(event.target.value);
+                            }}
+                          ></input>
+                          <button
+                            onClick={() => {
+                              setNewRecordPopup(true);
+                              getpatient();
+                            }}
+                          >
+                            Search
+                          </button>
+                        </div>
+                        {newRecordPopup ? (
+                          <>
+                            {patientRecord.data ? (
+                              <>
+                                <PatientRecord
+                                  from="doctor"
+                                  record={
+                                    patientRecord.data.getPatientRecordByEmail
+                                  }
+                                />
+                              </>
+                            ) : (
+                              <></>
+                            )}
+                          </>
+                        ) : (
+                          <></>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className={styles.CompleteProfileWarrning}>
+                          Please Complete the Profile to See Any Reports !!
+                        </p>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <></>
+                )}
+              </>
             )}
           </div>
         </Col>

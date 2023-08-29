@@ -28,7 +28,7 @@
   margin: 10px 0px 45px 0px;
 }
 .dashboardProfileSec button,
-.addNewRecBtn button {
+.addNewRecBtn button, .addItemBtn {
   background-color: var(--mainheader-primary-bgcolor);
   color: white;
   margin: 30px 0px;
@@ -43,6 +43,16 @@
   justify-content: space-between;
   margin: 10px 0px;
 }
+.EditProfileHead button, .removeItemBtn {
+  width: auto !important;
+  background-color: var(--main-button-danger-color);
+  color: white;
+  margin: 0px 10px;
+  padding: 5px 7px;
+  border-radius: 3px;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+}
 .addNewRecBtn {
   display: flex;
   flex-direction: row;
@@ -50,6 +60,7 @@
 }
 .FieldContainer {
   text-align: left;
+  margin-left: 0;
 }
 .Field > input,
 .Field > select,
@@ -74,9 +85,9 @@
   color: white;
   margin: 30px 0px;
 }
-.paginationButton{
+.paginationButton {
   background-color: var(--main-button-color);
-  margin:0px 5px;
+  margin: 0px 5px;
   padding: 3px 12px;
   border: 1px solid black;
   border-radius: 3px;
@@ -86,7 +97,6 @@
 .requestPatientRec {
   text-align: right;
 }
-
 .requestPatientRec button {
   width: auto !important;
   background-color: var(--mainheader-primary-bgcolor);
@@ -102,6 +112,11 @@
   border-radius: 3px;
   border: none;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
+}
+.CompleteProfileWarrning {
+  color: var(--main-button-danger-color);
+  margin-top: 35vh;
+  font-family: var(--small-headings);
 }
 /* Admin DashBoard */
 .adminMenu {

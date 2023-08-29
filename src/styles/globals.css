@@ -1,8 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Dongle&family=Orbitron:wght@500&display=swap');
+/* For Small Headings */
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@400;600&display=swap');
+
 :root {
   --mainheader-primary-bgcolor: #00c473;
   --logo-font: 'Orbitron', sans-serif;
   --main-heading-font: 'Dongle', sans-serif;
   --main-body-bg: #ddfcff;
   --main-button-color: #9bc9e7;
+  --main-button-danger-color: #a80115;
+  --small-headings: 'Wix Madefor Display', sans-serif;
 }

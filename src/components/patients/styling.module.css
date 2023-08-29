@@ -24,3 +24,18 @@
     rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
   border-radius: 4px;
 }
+
+.diseaseHead{
+  display: flex;
+  justify-content: space-between;
+}
+.diseaseHead button{
+  width: auto !important;
+  background-color: var(--main-button-danger-color);
+  color: white;
+  margin: 0px 10px;
+  padding: 8px 8px;
+  border-radius: 3px;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+}

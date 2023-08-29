@@ -5,8 +5,9 @@
     color: white;
 }
 .MainHeaderSec1 h2{
-    font-family: var(--logo-font);
+    font-family: var(--small-headings);
     color: white;
+    font-weight: 600;
 }
 .MainHeaderSec2{
     text-align: right;
