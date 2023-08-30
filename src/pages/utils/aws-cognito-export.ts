@@ -1,9 +1,12 @@
 import AWS from "aws-sdk";
+
 AWS.config.update({
-  region: "us-east-1",
-  accessKeyId: "AKIAUCIGS7I7YSIXZ3LJ",
-  secretAccessKey: "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",
+  region: process.env.region,
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
 });
+
+
 const CognitoConfig = {
   Auth: {
     region: process.env.region,
