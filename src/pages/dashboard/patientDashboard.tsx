@@ -438,7 +438,7 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
                     <div>
                       <label>Doctors:</label>
                       <FieldArray name="doctors">
-                        {({ insert, remove, push }) => (
+                        {({ insert, remove, push }:any) => (
                           <div className={styles.doctorsSubForm}>
                             {values.doctors.length > 0 &&
                               values.doctors.map((doctor, index) => (

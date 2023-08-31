@@ -5,9 +5,9 @@ import { Row, Col } from "react-bootstrap";
 
 interface ObjectData {
   type: string;
-  data: any;
-  setId: any;
-  fetchData: any;
+  data?: any;
+  setId?: any;
+  fetchData?: any;
 }
 const ObjectBar: React.FC<ObjectData> = ({ type, data, setId, fetchData }) => {
   return (

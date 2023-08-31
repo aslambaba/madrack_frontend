@@ -173,7 +173,7 @@ const DoctorEditProfilePopup: React.FC<any> = ({
             <div>
               <label>Degrees</label>
               <FieldArray name="degrees">
-                {({ push, remove }) => (
+                {({ push, remove }:any) => (
                   <>
                     {values.degrees.map((_, index) => (
                       <div key={index}>
@@ -267,7 +267,7 @@ const DoctorEditProfilePopup: React.FC<any> = ({
             <div>
               <label>Experiences</label>
               <FieldArray name="experiences">
-                {({ push, remove }) => (
+                {({ push, remove }:any) => (
                   <>
                     {values.experiences.map((_, index) => (
                       <div key={index}>

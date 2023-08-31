@@ -31,7 +31,7 @@ interface PatientRecord {
 interface PatientsProps {
   from: String;
   record: PatientRecord;
-  deletePatient?(id: String): String;
+  deletePatient?(id: String): any;
 }
 const PatientRecord: React.FC<PatientsProps> = ({
   from,
@@ -76,13 +76,19 @@ const PatientRecord: React.FC<PatientsProps> = ({
                 <div className={styles.diseaseHead}>
                   <h4> + {data.diseaseName}</h4>
                   {from == "patient" ? (
-                    <button
-                      onClick={() => {
-                        deletePatient(data._id);
-                      }}
-                    >
-                      Delete
-                    </button>
+                    <>
+                      {deletePatient ? (
+                        <button
+                          onClick={() => {
+                            deletePatient(data._id);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      ) : (
+                        <></>
+                      )}
+                    </>
                   ) : (
                     <></>
                   )}
