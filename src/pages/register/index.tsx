@@ -139,7 +139,7 @@ export default function Register() {
           const cognitoIdentityServiceProvider =
             new CognitoIdentityServiceProvider({ region: "us-east-1" });
 
-          const userPoolId = "us-east-1_qXUjefA2V";
+          const userPoolId = "us-east-1_SHn7XHU1F";
           let groupName = "";
 
           if (user_type_of_currentUser == "Patient") {

@@ -106,8 +106,9 @@ const AdminDashbord = () => {
                 {patientID == "" ? (
                   <>
                     <ul>
-                      {currentStudents.map((pat: any) => (
+                      {currentStudents.map((pat: any, id: any) => (
                         <ObjectBar
+                          key={id}
                           type="patients"
                           data={pat}
                           setId={setPatientID}
@@ -166,8 +167,8 @@ const AdminDashbord = () => {
                 <h3>Doctors</h3>
                 <br />
                 <ul>
-                  {currentStudents.map((student) => (
-                    <ObjectBar type="doctors" />
+                  {currentStudents.map((id: any) => (
+                    <ObjectBar key={id} type="doctors" />
                   ))}
                 </ul>
                 <div>
@@ -211,8 +212,8 @@ const AdminDashbord = () => {
                 <h3>Application Request</h3>
                 <br />
                 <ul>
-                  {currentStudents.map((student) => (
-                    <ObjectBar type="request" />
+                  {currentStudents.map((id: any) => (
+                    <ObjectBar key={id} type="request" />
                   ))}
                 </ul>
                 <div>

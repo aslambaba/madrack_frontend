@@ -21,7 +21,10 @@ import {
   Delete_Patient,
 } from "@/mutations/patient";
 import PatientRecord from "@/components/patients/patientRecord";
-import { getPatientRecord } from "../../../queries/patients";
+import {
+  getPatientRecord,
+  getPatientRecordByEmail,
+} from "../../../queries/patients";
 
 interface Doctor {
   doctorName: string;
@@ -176,8 +179,8 @@ const PatientProfileForm: React.FC<any> = ({
 const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
   const router = useRouter();
 
-  let patientRecord = useQuery(getPatientRecord, {
-    variables: { patientId: username },
+  let patientRecord = useQuery(getPatientRecordByEmail, {
+    variables: { email: username },
   });
   const [newRecordPopup, setNewRecordPopup] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -238,7 +241,7 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
 
-    let oldRec = patientRecord.data.getPatientRecord.disease;
+    let oldRec = patientRecord.data.getPatientRecordByEmail.disease;
     const cleanPatient = JSON.parse(JSON.stringify(oldRec), (key, value) =>
       key === "__typename" || key === "prototype" || key === "_id"
         ? undefined
@@ -247,18 +250,19 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
     let newarry = [values, ...cleanPatient];
     console.log("Bebo", newarry);
 
-    await updatePatient({
+    let a = await updatePatient({
       variables: {
-        patient_id: username,
+        patient_id: patientRecord.data.getPatientRecordByEmail.patient_id,
         disease: newarry,
       },
     });
+    console.log("yes res", a);
     RefetchData();
     setNewRecordPopup(false);
   };
 
   const deletePatientRec = async (id: string) => {
-    let patientDiseases = patientRecord.data.getPatientRecord.disease;
+    let patientDiseases = patientRecord.data.getPatientRecordByEmail.disease;
     const updateDiseases = patientDiseases.filter(
       (doctor: any) => doctor._id !== id
     );
@@ -281,11 +285,12 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
     setIsModalOpen(true);
   };
 
+  console.log("MOOD", patientRecord.data);
   return (
     <>
       {isModalOpen && (
         <PatientProfileForm
-          username={patientRecord.data.getPatientRecord}
+          username={patientRecord.data.getPatientRecordByEmail}
           setIsModalOpen={setIsModalOpen}
           refetch={RefetchData}
         />
@@ -309,38 +314,38 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
                   <p>
                     <b>Full Name</b>
                   </p>
-                  <p>{`${patientRecord.data.getPatientRecord.fullName}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.fullName}`}</p>
                 </div>
                 <div className={styles.personalInfo}>
                   <p>
                     <b>Father Name</b>
                   </p>
-                  <p>{`${patientRecord.data.getPatientRecord.fatherName}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.fatherName}`}</p>
                 </div>
                 <div className={styles.personalInfo}>
                   <p>
                     <b>CNIC</b>
                   </p>
-                  <p>{`${patientRecord.data.getPatientRecord.CNICNumber}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.CNICNumber}`}</p>
                 </div>
                 <div className={styles.personalInfo}>
                   <p>
                     <b>Email</b>
                   </p>
-                  <p>{`${patientRecord.data.getPatientRecord.email}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.email}`}</p>
                 </div>
                 <div className={styles.personalInfo}>
                   <p>
                     <b>Phone Number</b>
                   </p>
-                  <p>{`${patientRecord.data.getPatientRecord.phoneNumber}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.phoneNumber}`}</p>
                 </div>
                 <div className={styles.personalInfo}>
                   <p>
                     <b>Address</b>
                   </p>
                   <br />
-                  <p>{`${patientRecord.data.getPatientRecord.address}`}</p>
+                  <p>{`${patientRecord.data.getPatientRecordByEmail.address}`}</p>
                 </div>
                 <button onClick={handleOpenModal}>Edit Profile</button>
               </div>
@@ -570,7 +575,7 @@ const PatientDashboard: React.FC<PatientProps> = ({ username }) => {
             {patientRecord.data ? (
               <div>
                 <PatientRecord
-                  record={patientRecord.data.getPatientRecord}
+                  record={patientRecord.data.getPatientRecordByEmail}
                   from="patient"
                   deletePatient={deletePatientRec}
                 />

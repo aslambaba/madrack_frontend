@@ -11,6 +11,7 @@ interface DoctorsTreated {
   doctorDescription: String;
 }
 interface Disease {
+  _id: String;
   diseaseName: String;
   description: String;
   status: String;
@@ -30,7 +31,7 @@ interface PatientRecord {
 interface PatientsProps {
   from: String;
   record: PatientRecord;
-  deletePatient(id: String): String;
+  deletePatient?(id: String): String;
 }
 const PatientRecord: React.FC<PatientsProps> = ({
   from,

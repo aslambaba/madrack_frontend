@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import styles from "./homestyle.module.css";
 import BannerImage from "../../../public/banner.jpg";
 import Image from "next/image";
+import Link from "next/link";
 
 const Banner = () => {
   const textRef = useRef<HTMLDivElement>(null);
@@ -20,7 +21,7 @@ const Banner = () => {
       <div ref={textRef} className={styles.text}>
         <h1>Effortless Checkups, Seamless Health</h1>
         <p>Take control of your health today. Register on our platform for seamless access to personalized care and effortless checkups</p>
-        <a href="/register"><button>Register</button></a>
+        <Link href="/register"><button>Register</button></Link>
       </div>
     </div>
   );
