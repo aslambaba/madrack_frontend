@@ -8,7 +8,7 @@ interface Props {
   groupname: string;
   status: boolean;
 }
-export const useAuth = (
+const useAuth = (
   setIsUserLoggedIn: React.Dispatch<React.SetStateAction<Props>>
 ) => {
   const router = useRouter();
@@ -35,3 +35,5 @@ export const useAuth = (
     checkAuth();
   }, []);
 };
+
+export default useAuth;

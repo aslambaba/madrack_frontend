@@ -9,7 +9,7 @@ import * as Yup from "yup";
 import Image from "next/image";
 import loginVector from "../../../public/loginVector.jpg";
 import CognitoConfig from "../utils/aws-cognito-export";
-import { useAuth } from "../utils/userLoggedIn";
+import useAuth from "../utils/userLoggedIn";
 Amplify.configure(CognitoConfig);
 
 interface LoginFormValues {

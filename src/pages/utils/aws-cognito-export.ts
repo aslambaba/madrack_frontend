@@ -6,12 +6,14 @@ AWS.config.update({
   secretAccessKey: process.env.AWS_SECRET_KEY,
 });
 
-
-const CognitoConfig = {
-  Auth: {
-    region: process.env.region,
-    userPoolId: process.env.userPoolId,
-    userPoolWebClientId: process.env.userPoolWebClientId,
-  },
+const CognitoConfig = () => {
+  return {
+    Auth: {
+      region: process.env.region,
+      userPoolId: process.env.userPoolId,
+      userPoolWebClientId: process.env.userPoolWebClientId,
+    },
+  };
 };
+
 export default CognitoConfig;

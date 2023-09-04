@@ -2,7 +2,7 @@ import { useState } from "react";
 import MainHeader from "@/components/header/mainheader";
 import { Amplify, Auth } from "aws-amplify";
 import CognitoConfig from "../utils/aws-cognito-export";
-import { useAuth } from "../utils/userLoggedIn";
+import useAuth from "../utils/userLoggedIn";
 import styles from "./dashboardstyle.module.css";
 import PatientDashboard from "./patientDashboard";
 import DoctorDashboard from "./doctorDashboard";
